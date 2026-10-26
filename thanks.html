@@ -265,9 +265,12 @@ footer.site a { color: var(--body); }
     }
     // fix-49 (security LOW-3): the page never claims an unlock from URL parameters. Only the
     // session_id is shown; the sidebar verifies it server-side with Stripe.
-    if (p.get('session_id')) {
+    // fix-52 (security LOW-5): only a real Stripe Checkout Session id is echoed; any other
+    // text (a phone number, a long message) leaves the default panel up.
+    var sid = p.get('session_id') || '';
+    if (/^cs_(test|live)_[A-Za-z0-9]{8,200}$/.test(sid)) {
       show('state-manual', 'One more step');
-      document.getElementById('manual-session').textContent = p.get('session_id');
+      document.getElementById('manual-session').textContent = sid;
     } else {
       show('state-direct', 'Bought Pro on another computer?');
     }
