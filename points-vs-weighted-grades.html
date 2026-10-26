@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Points vs Weighted Grades: Which Is Your Sheet Doing?</title>
+<meta name="description" content="Total-points and weighted-category grading give different finals from the same scores. One worked example, and how to tell which one your sheet is doing.">
+<link rel="canonical" href="https://gradewright.foxlayne.ai/points-vs-weighted-grades.html">
+<style>
+/* Gradewright site stylesheet — system fonts only, zero external requests.
+ * Tokens match the add-on (src/addon/Styles.html, ux.md §1.1) and are WCAG-checked. */
+:root {
+  --ink: #16191D;
+  --body: #2B3138;
+  --muted: #59606A;
+  --canvas: #F5F6F7;
+  --surface: #FFFFFF;
+  --panel: #F3F7F4;
+  --rule: #C9CED4;
+  --control: #6E767F;
+  --focus: #0B5FA5;
+  --primary: #14543B;
+  --primary-hover: #0F4030;
+  --warn: #7A4B00;
+  --warn-bg: #FFF7E6;
+  --success: #14603A;
+  --danger: #A3232A;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --maxw: 1040px;
+}
+* { box-sizing: border-box; min-width: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--body);
+  font: 16px/1.65 var(--sans);
+}
+.in { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
+.narrow { max-width: 720px; }
+a { color: var(--primary); }
+a:hover { color: var(--primary-hover); }
+a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 3px;
+}
+h1, h2, h3 { color: var(--ink); line-height: 1.2; letter-spacing: -0.015em; margin: 0; }
+h1 { font-size: clamp(28px, 5vw, 44px); }
+h2 { font-size: clamp(21px, 3.2vw, 28px); margin-bottom: 10px; }
+h3 { font-size: 17px; margin-bottom: 4px; }
+p { margin: 0 0 14px; }
+.lede { font-size: clamp(16px, 2.2vw, 19px); color: var(--body); }
+.small { font-size: 13.5px; color: var(--muted); }
+.muted { color: var(--muted); }
+.mono { font-family: var(--mono); }
+.vh { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+code { font-family: var(--mono); font-size: 13.5px; background: var(--canvas); padding: 1px 4px; border-radius: 3px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+  padding: 10px 18px; border-radius: 6px; font-weight: 600; text-decoration: none;
+  border: 1px solid transparent; font-size: 15px;
+}
+.btn-p { background: var(--primary); color: #fff; }
+.btn-p:hover { background: var(--primary-hover); color: #fff; }
+.btn-s { background: #fff; color: var(--ink); border-color: var(--control); }
+.btn-s:hover { color: var(--ink); }
+.btn-wide { width: 100%; }
+
+header.top { border-bottom: 1px solid var(--rule); background: #fff; position: sticky; top: 0; z-index: 5; }
+.top .in { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 60px; }
+.logo { font-weight: 700; font-size: 18px; color: var(--ink); text-decoration: none; letter-spacing: -0.02em; }
+nav.top-links { display: flex; gap: 20px; font-size: 14.5px; }
+nav.top-links a { color: var(--body); text-decoration: none; }
+nav.top-links a:hover { text-decoration: underline; }
+.top .btn { min-height: 40px; padding: 9px 16px; }
+@media (max-width: 760px) { nav.top-links { display: none; } }
+
+main { display: block; }
+section { padding: 44px 0; }
+section.alt { background: var(--canvas); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+
+/* ---- landing ---- */
+.hero { padding: 44px 0 8px; }
+.hero .in { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+@media (max-width: 900px) { .hero .in { grid-template-columns: 1fr; gap: 24px; } }
+.cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 22px 0 10px; }
+.cta-row .btn { min-width: 190px; }
+
+.shot { border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--canvas); }
+.shot .bar { display: flex; gap: 6px; padding: 8px 10px; background: #E9EBED; border-bottom: 1px solid var(--rule); }
+.shot .bar i { width: 9px; height: 9px; border-radius: 50%; background: #BFC4CA; }
+.shot .body { display: flex; min-height: 300px; }
+.shot .sheet { flex: 1 1 auto; padding: 10px; font: 12px/1.5 var(--mono); color: #3B4249; overflow: hidden; }
+.shot .sheet table { border-collapse: collapse; width: 100%; }
+.shot .sheet td, .shot .sheet th { border: 1px solid #D8DCE0; padding: 3px 6px; }
+.shot .sheet th { background: #EEF0F2; font-weight: 600; }
+.shot .side { width: 190px; border-left: 1px solid var(--rule); background: #fff; padding: 10px; flex: 0 0 auto; }
+.shot .side .b { font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+.shot .side .k { background: var(--primary); color: #fff; border-radius: 5px; text-align: center; padding: 7px; margin-top: 8px; font-weight: 600; font-size: 12px; }
+.shot .side .r { display: flex; justify-content: space-between; font-size: 11.5px; border-bottom: 1px solid #EDEFF1; padding: 3px 0; }
+.shot .side .r b { color: var(--ink); }
+
+.proof { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+@media (max-width: 800px) { .proof { grid-template-columns: 1fr; } }
+.proof article { border-top: 3px solid var(--primary); padding-top: 12px; }
+.proof p { margin: 0; font-size: 15px; }
+
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: s; padding: 0; margin: 22px 0 0; list-style: none; }
+@media (max-width: 800px) { .steps { grid-template-columns: 1fr; } }
+.steps li { background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 18px; }
+.steps li::before { counter-increment: s; content: counter(s); display: inline-flex; align-items: center;
+  justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--primary);
+  color: #fff; font-weight: 700; font-size: 14px; margin-bottom: 10px; }
+.steps p { margin: 0; font-size: 15px; }
+
+table.demo { width: 100%; border-collapse: collapse; font-size: 14.5px; background: #fff; border: 1px solid var(--rule); }
+table.demo th, table.demo td { border-bottom: 1px solid var(--rule); padding: 9px 10px; text-align: left; }
+table.demo th { background: var(--canvas); font-weight: 600; color: var(--ink); }
+table.demo td.num { text-align: right; font-family: var(--mono); }
+.notice { border-left: 3px solid var(--warn); background: var(--warn-bg); color: var(--warn);
+  padding: 10px 12px; font-size: 14.5px; border-radius: 0 6px 6px 0; }
+
+.price { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; margin-top: 20px; }
+@media (max-width: 760px) { .price { grid-template-columns: 1fr; } }
+.price article { border: 1px solid var(--rule); border-radius: 8px; padding: 22px; background: #fff; }
+.price article.pro { border: 1.5px solid var(--primary); background: var(--panel); }
+.price .amt { font-size: 30px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+.price .amt small { font-size: 14px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.price ul { padding-left: 20px; margin: 10px 0 18px; }
+.price li { margin: 6px 0; }
+
+.faq details { background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
+.faq summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+.faq details[open] summary { margin-bottom: 8px; }
+.faq p { margin: 0; font-size: 15px; }
+
+/* ---- report-card anatomy ---- */
+.rc { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 18px; }
+@media (max-width: 760px) { .rc { grid-template-columns: 1fr; } }
+.card-demo { max-width: 340px; border: 1px solid var(--rule); background: #fff; padding: 22px;
+  font: 11.5px/1.5 Arial, Helvetica, sans-serif; color: #000; }
+.card-demo .t { font-weight: 700; font-size: 15px; }
+.card-demo .sub { font-size: 10.5px; border-bottom: 1.5px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
+.card-demo .row { display: flex; justify-content: space-between; border-bottom: 1px solid #8A8A8A; padding: 4px 0; }
+.card-demo .fin { display: flex; justify-content: space-between; border-top: 2px solid #000; border-bottom: 2px solid #000;
+  padding: 7px 0; margin: 4px 0 10px; font-weight: 700; }
+.card-demo .foot { font-size: 9px; color: #444; border-top: 1px solid #8A8A8A; margin-top: 12px; padding-top: 5px; }
+
+/* ---- SEO pages ---- */
+main.narrow { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+main.narrow h1 { font-size: clamp(26px, 4.4vw, 36px); margin: 22px 0 10px; }
+main.narrow h2 { font-size: 23px; margin: 34px 0 10px; }
+main.narrow h3 { margin: 20px 0 6px; }
+.crumb { font-size: 13px; color: var(--muted); margin-top: 18px; }
+.crumb a { color: var(--muted); }
+.answer { font-size: 18px; border-left: 3px solid var(--primary); padding-left: 14px; margin: 0 0 18px; }
+main.narrow table { width: 100%; border-collapse: collapse; font-size: 14.5px; margin: 14px 0; }
+main.narrow th, main.narrow td { border-bottom: 1px solid var(--rule); padding: 8px 9px; text-align: left; }
+main.narrow th { background: var(--canvas); font-weight: 600; color: var(--ink); }
+main.narrow td.num, main.narrow th.num { text-align: right; font-family: var(--mono); }
+pre { background: var(--canvas); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px;
+  overflow-x: auto; font: 13px/1.6 var(--mono); color: #21262B; margin: 12px 0; }
+.callout { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; margin: 18px 0; }
+.callout p:last-child { margin-bottom: 0; }
+.cta { background: var(--panel); border: 1px solid var(--primary); border-radius: 8px; padding: 18px 20px; margin: 30px 0; }
+.cta h2 { margin: 0 0 6px; font-size: 19px; }
+.cta p { margin: 0 0 12px; font-size: 15px; }
+.cta .btn + .btn { margin-left: 8px; }
+.related { border-top: 1px solid var(--rule); margin-top: 32px; padding-top: 14px; font-size: 15px; }
+.related ul { padding-left: 20px; }
+.reviewed { font-size: 13px; color: var(--muted); margin-top: 26px; border-top: 1px solid var(--rule); padding-top: 10px; }
+
+/* ---- legal prose ---- */
+main.prose { max-width: 720px; margin: 0 auto; padding: 0 20px 24px; }
+main.prose h1 { margin: 26px 0 14px; font-size: clamp(26px, 4.4vw, 38px); }
+main.prose h2 { margin: 28px 0 8px; font-size: 20px; }
+main.prose p, main.prose li { font-size: 15.5px; }
+main.prose ul { padding-left: 22px; }
+
+/* ---- thanks states ---- */
+main.thanks { max-width: 640px; margin: 0 auto; padding: 24px 20px; }
+.thanks-panel { border: 1px solid var(--rule); border-radius: 8px; padding: 22px; background: #fff; }
+.thanks-panel .key { font-family: var(--mono); background: var(--canvas); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 12px 14px; word-break: break-all; font-size: 13px; margin: 12px 0; }
+.thanks-panel[hidden] { display: none; }
+.ask { border: 1px solid var(--rule); border-radius: 8px; padding: 18px 20px; margin-top: 24px; background: #fff; }
+.ask fieldset { border: none; padding: 0; margin: 10px 0 14px; }
+.ask label { display: block; margin: 6px 0; font-size: 15px; }
+
+footer.site { border-top: 1px solid var(--rule); background: var(--canvas); padding: 32px 0; font-size: 14px; }
+footer.site .in { display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; }
+footer.site nav { display: flex; gap: 18px; flex-wrap: wrap; }
+footer.site a { color: var(--body); }
+.colophon { color: var(--muted); font-size: 13px; margin-top: 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in">
+    <a class="logo" href="/">Gradewright</a>
+    <nav class="top-links" aria-label="Main">
+      <a href="/#how">How it works</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/weighted-grades-google-sheets.html">Weighted grades</a>
+      <a href="/report-cards-from-google-sheets.html">Report cards</a>
+    </nav>
+    <a class="btn btn-p" href="https://workspace.google.com/marketplace/search/gradewright">Add to Sheets</a>
+  </div>
+</header>
+<main class="narrow">
+  <div class="crumb"><a href="/">Home</a> › Points vs weighted grades</div>
+
+  <h1>Points vs weighted grades: which one is your sheet calculating?</h1>
+
+  <p class="answer">Total-points grading divides everything earned by everything possible. Weighted-category grading averages each category first, then applies weights. They answer different questions about what a missed homework is worth, and the same scores can come out differently under each.</p>
+
+  <h2>One student, two methods</h2>
+  <p>Homework 20%, quizzes 30%, exams 50%. Homework scores 90/80/100, quizzes 70/85/95, exams 88/100 and 76/100.</p>
+
+  <table>
+    <tr><th>Method</th><th>How it works</th><th class="num">Result</th></tr>
+    <tr><td>Weighted categories</td><td>average each category, apply 20/30/50</td><td class="num">84.00</td></tr>
+    <tr><td>Total points</td><td>684 earned ÷ 800 possible</td><td class="num">85.50</td></tr>
+  </table>
+
+  <p>Same scores, two different finals. The 1.50-point gap isn't a rounding error — it's two different policies about how much one homework is worth.</p>
+
+  <p>The weighted arithmetic:</p>
+  <pre>90.00 × 20% + 83.33 × 30% + 82.00 × 50% = 84.00</pre>
+
+  <p>The total-points arithmetic:</p>
+  <pre>earned  = 90 + 80 + 100 + 70 + 85 + 95 + 88 + 76 = 684
+possible = 300 + 300 + 200 = 800
+final    = 684 ÷ 800 = 85.50</pre>
+
+  <h2>Which one your sheet is doing</h2>
+  <ul>
+    <li><b>You average each category, then combine them</b> → weighted categories.</li>
+    <li><b>You add up every score and divide by the total possible</b> → total points.</li>
+    <li><b>You're not sure</b> → look for a <code>SUM(...)/SUM(...)</code> pattern, or a grade that changes when you add a low-value assignment to a category.</li>
+  </ul>
+
+  <h2>Three ways the distinction bites</h2>
+
+  <h3>1. A single big assignment distorts total points</h3>
+  <p>Under total points, a 200-point project carries twice the weight of a 100-point exam, whether or not you meant it to. Weighted categories make the intended weight explicit, so a category's weight stays fixed no matter how many points the assignments inside it total.</p>
+
+  <h3>2. Points-based exams mixed into percentage categories</h3>
+  <p>The common real-world case: homework is a percentage, exams are points. Averaging exam points naively (<code>AVERAGE(42,76)</code> for a 50-point and a 100-point exam) gives 59.00 instead of the correct 78.67. Mixing the two encodings in one sheet is where most grade formulas break.</p>
+
+  <h3>3. Parents can't reproduce the number</h3>
+  <p>Both methods are defensible; the failure is when the method is implicit. A parent who adds up the points and gets 85.50 when the card says 84.00 deserves an explanation, and the card should say which method produced it.</p>
+
+  <div class="callout">
+    <p><b>When a spreadsheet formula is the better answer.</b> A single, uniform method — all points, no category weights — is a one-cell <code>SUM()/SUM()</code> and needs no tool. Gradewright earns its place when categories have different types (points exams, percentage homework) and weights, which is exactly the sheet that hand-built formulas get wrong silently.</p>
+  </div>
+
+  <div class="cta">
+    <h2>Pick per category, not per class</h2>
+    <p>Gradewright lets each category be percentage or points, and it records the weights it actually used so you can show a parent the arithmetic. Free for one class; $12 once for unlimited classes and PDF report cards.</p>
+    <a class="btn btn-p" href="https://workspace.google.com/marketplace/search/gradewright">Add to Sheets</a>
+    <a class="btn btn-s" href="/weighted-grades-google-sheets.html">The weighted-grade walkthrough</a>
+  </div>
+
+  <div class="related">
+    <b>Related</b>
+    <ul>
+      <li><a href="/weighted-grades-google-sheets.html">How to calculate weighted grades in Google Sheets</a></li>
+      <li><a href="/weights-dont-add-to-100.html">When your weights don't add up to 100</a></li>
+      <li><a href="/drop-lowest-quiz-score.html">How to drop the lowest quiz score</a></li>
+    </ul>
+  </div>
+
+  <p class="reviewed">Last reviewed 24 October 2026. The example numbers on this page were computed with the same rules Gradewright applies; if you spot a discrepancy, email <span class="mono">support@foxlayne.ai</span> and it gets fixed.</p>
+</main>
+
+<footer class="site">
+  <div class="in">
+    <div>
+      <div class="logo">Gradewright</div>
+      <div class="colophon">A FoxLayne product. Built for teachers who keep their gradebook in a spreadsheet.</div>
+    </div>
+    <nav aria-label="Footer">
+      <a href="/weighted-grades-google-sheets.html">Weighted grades</a>
+      <a href="/report-cards-from-google-sheets.html">Report cards</a>
+      <a href="/report-card-template.html">Free template</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="mailto:support@foxlayne.ai">Support</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

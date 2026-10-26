@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free Report Card Template for Google Sheets</title>
+<meta name="description" content="A free report card template: the columns, the weighted-final formula, the letter-band formula, and a CSV you can import today. No sign-up needed.">
+<link rel="canonical" href="https://gradewright.foxlayne.ai/report-card-template.html">
+<style>
+/* Gradewright site stylesheet — system fonts only, zero external requests.
+ * Tokens match the add-on (src/addon/Styles.html, ux.md §1.1) and are WCAG-checked. */
+:root {
+  --ink: #16191D;
+  --body: #2B3138;
+  --muted: #59606A;
+  --canvas: #F5F6F7;
+  --surface: #FFFFFF;
+  --panel: #F3F7F4;
+  --rule: #C9CED4;
+  --control: #6E767F;
+  --focus: #0B5FA5;
+  --primary: #14543B;
+  --primary-hover: #0F4030;
+  --warn: #7A4B00;
+  --warn-bg: #FFF7E6;
+  --success: #14603A;
+  --danger: #A3232A;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --maxw: 1040px;
+}
+* { box-sizing: border-box; min-width: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--body);
+  font: 16px/1.65 var(--sans);
+}
+.in { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
+.narrow { max-width: 720px; }
+a { color: var(--primary); }
+a:hover { color: var(--primary-hover); }
+a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 3px;
+}
+h1, h2, h3 { color: var(--ink); line-height: 1.2; letter-spacing: -0.015em; margin: 0; }
+h1 { font-size: clamp(28px, 5vw, 44px); }
+h2 { font-size: clamp(21px, 3.2vw, 28px); margin-bottom: 10px; }
+h3 { font-size: 17px; margin-bottom: 4px; }
+p { margin: 0 0 14px; }
+.lede { font-size: clamp(16px, 2.2vw, 19px); color: var(--body); }
+.small { font-size: 13.5px; color: var(--muted); }
+.muted { color: var(--muted); }
+.mono { font-family: var(--mono); }
+.vh { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+code { font-family: var(--mono); font-size: 13.5px; background: var(--canvas); padding: 1px 4px; border-radius: 3px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+  padding: 10px 18px; border-radius: 6px; font-weight: 600; text-decoration: none;
+  border: 1px solid transparent; font-size: 15px;
+}
+.btn-p { background: var(--primary); color: #fff; }
+.btn-p:hover { background: var(--primary-hover); color: #fff; }
+.btn-s { background: #fff; color: var(--ink); border-color: var(--control); }
+.btn-s:hover { color: var(--ink); }
+.btn-wide { width: 100%; }
+
+header.top { border-bottom: 1px solid var(--rule); background: #fff; position: sticky; top: 0; z-index: 5; }
+.top .in { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 60px; }
+.logo { font-weight: 700; font-size: 18px; color: var(--ink); text-decoration: none; letter-spacing: -0.02em; }
+nav.top-links { display: flex; gap: 20px; font-size: 14.5px; }
+nav.top-links a { color: var(--body); text-decoration: none; }
+nav.top-links a:hover { text-decoration: underline; }
+.top .btn { min-height: 40px; padding: 9px 16px; }
+@media (max-width: 760px) { nav.top-links { display: none; } }
+
+main { display: block; }
+section { padding: 44px 0; }
+section.alt { background: var(--canvas); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+
+/* ---- landing ---- */
+.hero { padding: 44px 0 8px; }
+.hero .in { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+@media (max-width: 900px) { .hero .in { grid-template-columns: 1fr; gap: 24px; } }
+.cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 22px 0 10px; }
+.cta-row .btn { min-width: 190px; }
+
+.shot { border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--canvas); }
+.shot .bar { display: flex; gap: 6px; padding: 8px 10px; background: #E9EBED; border-bottom: 1px solid var(--rule); }
+.shot .bar i { width: 9px; height: 9px; border-radius: 50%; background: #BFC4CA; }
+.shot .body { display: flex; min-height: 300px; }
+.shot .sheet { flex: 1 1 auto; padding: 10px; font: 12px/1.5 var(--mono); color: #3B4249; overflow: hidden; }
+.shot .sheet table { border-collapse: collapse; width: 100%; }
+.shot .sheet td, .shot .sheet th { border: 1px solid #D8DCE0; padding: 3px 6px; }
+.shot .sheet th { background: #EEF0F2; font-weight: 600; }
+.shot .side { width: 190px; border-left: 1px solid var(--rule); background: #fff; padding: 10px; flex: 0 0 auto; }
+.shot .side .b { font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+.shot .side .k { background: var(--primary); color: #fff; border-radius: 5px; text-align: center; padding: 7px; margin-top: 8px; font-weight: 600; font-size: 12px; }
+.shot .side .r { display: flex; justify-content: space-between; font-size: 11.5px; border-bottom: 1px solid #EDEFF1; padding: 3px 0; }
+.shot .side .r b { color: var(--ink); }
+
+.proof { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+@media (max-width: 800px) { .proof { grid-template-columns: 1fr; } }
+.proof article { border-top: 3px solid var(--primary); padding-top: 12px; }
+.proof p { margin: 0; font-size: 15px; }
+
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: s; padding: 0; margin: 22px 0 0; list-style: none; }
+@media (max-width: 800px) { .steps { grid-template-columns: 1fr; } }
+.steps li { background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 18px; }
+.steps li::before { counter-increment: s; content: counter(s); display: inline-flex; align-items: center;
+  justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--primary);
+  color: #fff; font-weight: 700; font-size: 14px; margin-bottom: 10px; }
+.steps p { margin: 0; font-size: 15px; }
+
+table.demo { width: 100%; border-collapse: collapse; font-size: 14.5px; background: #fff; border: 1px solid var(--rule); }
+table.demo th, table.demo td { border-bottom: 1px solid var(--rule); padding: 9px 10px; text-align: left; }
+table.demo th { background: var(--canvas); font-weight: 600; color: var(--ink); }
+table.demo td.num { text-align: right; font-family: var(--mono); }
+.notice { border-left: 3px solid var(--warn); background: var(--warn-bg); color: var(--warn);
+  padding: 10px 12px; font-size: 14.5px; border-radius: 0 6px 6px 0; }
+
+.price { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; margin-top: 20px; }
+@media (max-width: 760px) { .price { grid-template-columns: 1fr; } }
+.price article { border: 1px solid var(--rule); border-radius: 8px; padding: 22px; background: #fff; }
+.price article.pro { border: 1.5px solid var(--primary); background: var(--panel); }
+.price .amt { font-size: 30px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+.price .amt small { font-size: 14px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.price ul { padding-left: 20px; margin: 10px 0 18px; }
+.price li { margin: 6px 0; }
+
+.faq details { background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
+.faq summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+.faq details[open] summary { margin-bottom: 8px; }
+.faq p { margin: 0; font-size: 15px; }
+
+/* ---- report-card anatomy ---- */
+.rc { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 18px; }
+@media (max-width: 760px) { .rc { grid-template-columns: 1fr; } }
+.card-demo { max-width: 340px; border: 1px solid var(--rule); background: #fff; padding: 22px;
+  font: 11.5px/1.5 Arial, Helvetica, sans-serif; color: #000; }
+.card-demo .t { font-weight: 700; font-size: 15px; }
+.card-demo .sub { font-size: 10.5px; border-bottom: 1.5px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
+.card-demo .row { display: flex; justify-content: space-between; border-bottom: 1px solid #8A8A8A; padding: 4px 0; }
+.card-demo .fin { display: flex; justify-content: space-between; border-top: 2px solid #000; border-bottom: 2px solid #000;
+  padding: 7px 0; margin: 4px 0 10px; font-weight: 700; }
+.card-demo .foot { font-size: 9px; color: #444; border-top: 1px solid #8A8A8A; margin-top: 12px; padding-top: 5px; }
+
+/* ---- SEO pages ---- */
+main.narrow { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+main.narrow h1 { font-size: clamp(26px, 4.4vw, 36px); margin: 22px 0 10px; }
+main.narrow h2 { font-size: 23px; margin: 34px 0 10px; }
+main.narrow h3 { margin: 20px 0 6px; }
+.crumb { font-size: 13px; color: var(--muted); margin-top: 18px; }
+.crumb a { color: var(--muted); }
+.answer { font-size: 18px; border-left: 3px solid var(--primary); padding-left: 14px; margin: 0 0 18px; }
+main.narrow table { width: 100%; border-collapse: collapse; font-size: 14.5px; margin: 14px 0; }
+main.narrow th, main.narrow td { border-bottom: 1px solid var(--rule); padding: 8px 9px; text-align: left; }
+main.narrow th { background: var(--canvas); font-weight: 600; color: var(--ink); }
+main.narrow td.num, main.narrow th.num { text-align: right; font-family: var(--mono); }
+pre { background: var(--canvas); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px;
+  overflow-x: auto; font: 13px/1.6 var(--mono); color: #21262B; margin: 12px 0; }
+.callout { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; margin: 18px 0; }
+.callout p:last-child { margin-bottom: 0; }
+.cta { background: var(--panel); border: 1px solid var(--primary); border-radius: 8px; padding: 18px 20px; margin: 30px 0; }
+.cta h2 { margin: 0 0 6px; font-size: 19px; }
+.cta p { margin: 0 0 12px; font-size: 15px; }
+.cta .btn + .btn { margin-left: 8px; }
+.related { border-top: 1px solid var(--rule); margin-top: 32px; padding-top: 14px; font-size: 15px; }
+.related ul { padding-left: 20px; }
+.reviewed { font-size: 13px; color: var(--muted); margin-top: 26px; border-top: 1px solid var(--rule); padding-top: 10px; }
+
+/* ---- legal prose ---- */
+main.prose { max-width: 720px; margin: 0 auto; padding: 0 20px 24px; }
+main.prose h1 { margin: 26px 0 14px; font-size: clamp(26px, 4.4vw, 38px); }
+main.prose h2 { margin: 28px 0 8px; font-size: 20px; }
+main.prose p, main.prose li { font-size: 15.5px; }
+main.prose ul { padding-left: 22px; }
+
+/* ---- thanks states ---- */
+main.thanks { max-width: 640px; margin: 0 auto; padding: 24px 20px; }
+.thanks-panel { border: 1px solid var(--rule); border-radius: 8px; padding: 22px; background: #fff; }
+.thanks-panel .key { font-family: var(--mono); background: var(--canvas); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 12px 14px; word-break: break-all; font-size: 13px; margin: 12px 0; }
+.thanks-panel[hidden] { display: none; }
+.ask { border: 1px solid var(--rule); border-radius: 8px; padding: 18px 20px; margin-top: 24px; background: #fff; }
+.ask fieldset { border: none; padding: 0; margin: 10px 0 14px; }
+.ask label { display: block; margin: 6px 0; font-size: 15px; }
+
+footer.site { border-top: 1px solid var(--rule); background: var(--canvas); padding: 32px 0; font-size: 14px; }
+footer.site .in { display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; }
+footer.site nav { display: flex; gap: 18px; flex-wrap: wrap; }
+footer.site a { color: var(--body); }
+.colophon { color: var(--muted); font-size: 13px; margin-top: 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in">
+    <a class="logo" href="/">Gradewright</a>
+    <nav class="top-links" aria-label="Main">
+      <a href="/#how">How it works</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/weighted-grades-google-sheets.html">Weighted grades</a>
+      <a href="/report-cards-from-google-sheets.html">Report cards</a>
+    </nav>
+    <a class="btn btn-p" href="https://workspace.google.com/marketplace/search/gradewright">Add to Sheets</a>
+  </div>
+</header>
+<main class="narrow">
+  <div class="crumb"><a href="/">Home</a> › Free report card template</div>
+
+  <h1>A free report card template for Google Sheets</h1>
+
+  <p class="answer">Here is a real template you can use without installing anything: the columns, the formulas that compute a weighted final and a letter, and a CSV you can import today. No sign-up, no add-on, no email wall.</p>
+
+  <p><a class="btn btn-p" href="/report-card-template.csv" download>Download the CSV template</a></p>
+  <p class="small">The CSV is plain data — the formulas below go into your sheet alongside it, because a CSV file can't carry them.</p>
+
+  <h2>The columns</h2>
+  <p>One row per student. A name column, one column per assignment in each category, and a pair of columns for a points-based exam (earned, then possible). Empty cells are "not scored"; the word <code>excused</code> is "not scored, and marked excused"; a <code>0</code> is a real zero.</p>
+
+  <table id="columns">
+    <tr><th>Student</th><th>Homework 1</th><th>Homework 2</th><th>Homework 3</th><th>Quiz 1</th><th>Quiz 2</th><th>Exam earned</th><th>Exam possible</th></tr>
+    <tr><td>Avery Lin</td><td class="num">90</td><td class="num">80</td><td class="num">100</td><td class="num">70</td><td class="num">85</td><td class="num">88</td><td class="num">100</td></tr>
+    <tr><td>Jordan Pike</td><td class="num">88</td><td class="num">92</td><td class="num">excused</td><td class="num">90</td><td class="num">85</td><td class="num">76</td><td class="num">100</td></tr>
+    <tr><td>Maria Garcia</td><td class="num">79</td><td class="num">81</td><td class="num"></td><td class="num">95</td><td class="num">95</td><td class="num">42</td><td class="num">50</td></tr>
+  </table>
+
+  <h2>The formulas</h2>
+
+  <p>The columns are <code>A</code> Student, <code>B–D</code> homework, <code>E–F</code> quizzes, <code>G</code> exam earned and <code>H</code> exam possible. The formulas keep the category averages in helper cells <code>I</code>, <code>J</code> and <code>K</code>, then the final in <code>L</code> and the letter in <code>M</code>.</p>
+
+  <h3>1. Category averages (helper cells I, J, K)</h3>
+  <p>Homework and quizzes are percentages, so a plain average works — <code>AVERAGE</code> already skips empty cells and the word <code>excused</code>. Exams are points, so average them as total earned ÷ total possible:</p>
+  <pre># I2 — homework average (columns B:D)
+=IFERROR(AVERAGE(B2:D2), "")
+
+# J2 — quiz average (columns E:F)
+=IFERROR(AVERAGE(E2:F2), "")
+
+# K2 — exam as a percentage (G earned ÷ H possible)
+=IFERROR(100*SUM(G2:G2)/SUM(H2:H2), "")</pre>
+
+  <h3>2. The weighted final (helper cell L)</h3>
+  <p>Weight the three category averages, then divide by the sum of the weights you entered, so 20/30/50 and 2/3/5 both work:</p>
+  <pre># L2 — weighted final — weights 20 / 30 / 50
+=IFERROR(ROUND((I2*20 + J2*30 + K2*50) / SUM(20,30,50), 2), "")</pre>
+
+  <h3>3. The letter band (helper cell M)</h3>
+  <pre># M2 — letter for the final grade in L2
+=IFS(L2>=90,"A",L2>=80,"B",L2>=70,"C",L2>=60,"D",L2>=0,"F")</pre>
+
+  <h2>The worked example</h2>
+  <p>Here is what those formulas return on the CSV above, with the arithmetic shown. These are the numbers the formulas produce, rounded to two decimals — the same numbers Gradewright's engine returns for the same rows:</p>
+
+  <table id="worked-example">
+    <tr><th>Student</th><th class="num">Homework avg</th><th class="num">Quiz avg</th><th class="num">Exam %</th><th class="num">Final</th><th>Letter</th></tr>
+    <tr><td>Avery Lin</td><td class="num">90.00</td><td class="num">77.50</td><td class="num">88.00</td><td class="num">85.25</td><td>B</td></tr>
+    <tr><td>Jordan Pike</td><td class="num">90.00</td><td class="num">87.50</td><td class="num">76.00</td><td class="num">82.25</td><td>B</td></tr>
+    <tr><td>Maria Garcia</td><td class="num">80.00</td><td class="num">95.00</td><td class="num">84.00</td><td class="num">86.50</td><td>B</td></tr>
+  </table>
+
+  <p>Avery, step by step: homework (90 + 80 + 100) ÷ 3 = <b>90.00</b>; quizzes (70 + 85) ÷ 2 = <b>77.50</b>; exam 88 ÷ 100 = <b>88.00</b>; final (90.00 × 20 + 77.50 × 30 + 88.00 × 50) ÷ 100 = (1800 + 2325 + 4400) ÷ 100 = <b>85.25</b>.</p>
+  <p>Jordan's <code>excused</code> homework is left out of the average: (88 + 92) ÷ 2 = <b>90.00</b>. Maria's blank homework is left out too: (79 + 81) ÷ 2 = <b>80.00</b>, and her exam is 42 ÷ 50 = <b>84.00</b>.</p>
+
+  <h2>Three ways this template goes wrong</h2>
+
+  <h3>1. A new student row has no formulas</h3>
+  <p>Copy the formulas down for every student, and re-copy when a new student arrives mid-term. A missed row is a blank final grade that looks intentional until a parent asks.</p>
+
+  <h3>2. An empty cell that should be a zero</h3>
+  <p><code>AVERAGE</code> skips empties, so a student with three 90s and a missing homework averages 90.00, while three 90s and a typed <code>0</code> average 67.50. The template can't tell which you meant — you have to type the <code>0</code>. See <a href="/excused-blank-vs-zero.html">excused vs blank vs zero</a>.</p>
+
+  <h3>3. Inserting a column shifts the averages</h3>
+  <p>The category-average formulas name columns B through H by hand. Insert a column and they silently point at the wrong scores, while the final still reads the helper cells I, J and K. That's the single biggest reason people abandon a spreadsheet gradebook.</p>
+
+  <div class="callout">
+    <p><b>When this template is the better answer.</b> One class, one set of weights, no points-based mixing, and you don't need printed cards — this template is all you need. Gradewright is the better tool the moment you have several classes, per-category drop-lowest rules, or report cards to produce: it re-detects your columns on every compute instead of trusting column letters.</p>
+  </div>
+
+  <div class="cta">
+    <h2>If the template starts to fight you</h2>
+    <p>Gradewright does the same math but re-reads your columns each time, handles blank vs excused vs zero, and produces a printable report card per student. Free for one class; $12 once for unlimited classes and PDF export.</p>
+    <a class="btn btn-p" href="https://workspace.google.com/marketplace/search/gradewright">Add to Sheets</a>
+    <a class="btn btn-s" href="/report-cards-from-google-sheets.html">See how the cards are built</a>
+  </div>
+
+  <div class="related">
+    <b>Related</b>
+    <ul>
+      <li><a href="/weighted-grades-google-sheets.html">How to calculate weighted grades in Google Sheets</a></li>
+      <li><a href="/excused-blank-vs-zero.html">Excused vs blank vs zero</a></li>
+      <li><a href="/weights-dont-add-to-100.html">When your weights don't add up to 100</a></li>
+    </ul>
+  </div>
+
+  <p class="reviewed">Last reviewed 25 October 2026. The example numbers on this page were computed with the same rules Gradewright applies and are checked against the engine at build time; if you spot a discrepancy, email <span class="mono">support@foxlayne.ai</span> and it gets fixed.</p>
+</main>
+
+<footer class="site">
+  <div class="in">
+    <div>
+      <div class="logo">Gradewright</div>
+      <div class="colophon">A FoxLayne product. Built for teachers who keep their gradebook in a spreadsheet.</div>
+    </div>
+    <nav aria-label="Footer">
+      <a href="/weighted-grades-google-sheets.html">Weighted grades</a>
+      <a href="/report-cards-from-google-sheets.html">Report cards</a>
+      <a href="/report-card-template.html">Free template</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="mailto:support@foxlayne.ai">Support</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

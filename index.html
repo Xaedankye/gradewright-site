@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gradewright: weighted grades and report cards in Sheets</title>
+<meta name="description" content="Paste a roster into Google Sheets, map your columns, and get a weighted final grade plus a printable report card for every student. Free for one class.">
+<link rel="canonical" href="https://gradewright.foxlayne.ai/">
+<style>
+/* Gradewright site stylesheet — system fonts only, zero external requests.
+ * Tokens match the add-on (src/addon/Styles.html, ux.md §1.1) and are WCAG-checked. */
+:root {
+  --ink: #16191D;
+  --body: #2B3138;
+  --muted: #59606A;
+  --canvas: #F5F6F7;
+  --surface: #FFFFFF;
+  --panel: #F3F7F4;
+  --rule: #C9CED4;
+  --control: #6E767F;
+  --focus: #0B5FA5;
+  --primary: #14543B;
+  --primary-hover: #0F4030;
+  --warn: #7A4B00;
+  --warn-bg: #FFF7E6;
+  --success: #14603A;
+  --danger: #A3232A;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --maxw: 1040px;
+}
+* { box-sizing: border-box; min-width: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--body);
+  font: 16px/1.65 var(--sans);
+}
+.in { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
+.narrow { max-width: 720px; }
+a { color: var(--primary); }
+a:hover { color: var(--primary-hover); }
+a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 3px;
+}
+h1, h2, h3 { color: var(--ink); line-height: 1.2; letter-spacing: -0.015em; margin: 0; }
+h1 { font-size: clamp(28px, 5vw, 44px); }
+h2 { font-size: clamp(21px, 3.2vw, 28px); margin-bottom: 10px; }
+h3 { font-size: 17px; margin-bottom: 4px; }
+p { margin: 0 0 14px; }
+.lede { font-size: clamp(16px, 2.2vw, 19px); color: var(--body); }
+.small { font-size: 13.5px; color: var(--muted); }
+.muted { color: var(--muted); }
+.mono { font-family: var(--mono); }
+.vh { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+code { font-family: var(--mono); font-size: 13.5px; background: var(--canvas); padding: 1px 4px; border-radius: 3px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+  padding: 10px 18px; border-radius: 6px; font-weight: 600; text-decoration: none;
+  border: 1px solid transparent; font-size: 15px;
+}
+.btn-p { background: var(--primary); color: #fff; }
+.btn-p:hover { background: var(--primary-hover); color: #fff; }
+.btn-s { background: #fff; color: var(--ink); border-color: var(--control); }
+.btn-s:hover { color: var(--ink); }
+.btn-wide { width: 100%; }
+
+header.top { border-bottom: 1px solid var(--rule); background: #fff; position: sticky; top: 0; z-index: 5; }
+.top .in { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 60px; }
+.logo { font-weight: 700; font-size: 18px; color: var(--ink); text-decoration: none; letter-spacing: -0.02em; }
+nav.top-links { display: flex; gap: 20px; font-size: 14.5px; }
+nav.top-links a { color: var(--body); text-decoration: none; }
+nav.top-links a:hover { text-decoration: underline; }
+.top .btn { min-height: 40px; padding: 9px 16px; }
+@media (max-width: 760px) { nav.top-links { display: none; } }
+
+main { display: block; }
+section { padding: 44px 0; }
+section.alt { background: var(--canvas); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+
+/* ---- landing ---- */
+.hero { padding: 44px 0 8px; }
+.hero .in { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+@media (max-width: 900px) { .hero .in { grid-template-columns: 1fr; gap: 24px; } }
+.cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 22px 0 10px; }
+.cta-row .btn { min-width: 190px; }
+
+.shot { border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--canvas); }
+.shot .bar { display: flex; gap: 6px; padding: 8px 10px; background: #E9EBED; border-bottom: 1px solid var(--rule); }
+.shot .bar i { width: 9px; height: 9px; border-radius: 50%; background: #BFC4CA; }
+.shot .body { display: flex; min-height: 300px; }
+.shot .sheet { flex: 1 1 auto; padding: 10px; font: 12px/1.5 var(--mono); color: #3B4249; overflow: hidden; }
+.shot .sheet table { border-collapse: collapse; width: 100%; }
+.shot .sheet td, .shot .sheet th { border: 1px solid #D8DCE0; padding: 3px 6px; }
+.shot .sheet th { background: #EEF0F2; font-weight: 600; }
+.shot .side { width: 190px; border-left: 1px solid var(--rule); background: #fff; padding: 10px; flex: 0 0 auto; }
+.shot .side .b { font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+.shot .side .k { background: var(--primary); color: #fff; border-radius: 5px; text-align: center; padding: 7px; margin-top: 8px; font-weight: 600; font-size: 12px; }
+.shot .side .r { display: flex; justify-content: space-between; font-size: 11.5px; border-bottom: 1px solid #EDEFF1; padding: 3px 0; }
+.shot .side .r b { color: var(--ink); }
+
+.proof { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+@media (max-width: 800px) { .proof { grid-template-columns: 1fr; } }
+.proof article { border-top: 3px solid var(--primary); padding-top: 12px; }
+.proof p { margin: 0; font-size: 15px; }
+
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: s; padding: 0; margin: 22px 0 0; list-style: none; }
+@media (max-width: 800px) { .steps { grid-template-columns: 1fr; } }
+.steps li { background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 18px; }
+.steps li::before { counter-increment: s; content: counter(s); display: inline-flex; align-items: center;
+  justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--primary);
+  color: #fff; font-weight: 700; font-size: 14px; margin-bottom: 10px; }
+.steps p { margin: 0; font-size: 15px; }
+
+table.demo { width: 100%; border-collapse: collapse; font-size: 14.5px; background: #fff; border: 1px solid var(--rule); }
+table.demo th, table.demo td { border-bottom: 1px solid var(--rule); padding: 9px 10px; text-align: left; }
+table.demo th { background: var(--canvas); font-weight: 600; color: var(--ink); }
+table.demo td.num { text-align: right; font-family: var(--mono); }
+.notice { border-left: 3px solid var(--warn); background: var(--warn-bg); color: var(--warn);
+  padding: 10px 12px; font-size: 14.5px; border-radius: 0 6px 6px 0; }
+
+.price { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; margin-top: 20px; }
+@media (max-width: 760px) { .price { grid-template-columns: 1fr; } }
+.price article { border: 1px solid var(--rule); border-radius: 8px; padding: 22px; background: #fff; }
+.price article.pro { border: 1.5px solid var(--primary); background: var(--panel); }
+.price .amt { font-size: 30px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+.price .amt small { font-size: 14px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.price ul { padding-left: 20px; margin: 10px 0 18px; }
+.price li { margin: 6px 0; }
+
+.faq details { background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
+.faq summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+.faq details[open] summary { margin-bottom: 8px; }
+.faq p { margin: 0; font-size: 15px; }
+
+/* ---- report-card anatomy ---- */
+.rc { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 18px; }
+@media (max-width: 760px) { .rc { grid-template-columns: 1fr; } }
+.card-demo { max-width: 340px; border: 1px solid var(--rule); background: #fff; padding: 22px;
+  font: 11.5px/1.5 Arial, Helvetica, sans-serif; color: #000; }
+.card-demo .t { font-weight: 700; font-size: 15px; }
+.card-demo .sub { font-size: 10.5px; border-bottom: 1.5px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
+.card-demo .row { display: flex; justify-content: space-between; border-bottom: 1px solid #8A8A8A; padding: 4px 0; }
+.card-demo .fin { display: flex; justify-content: space-between; border-top: 2px solid #000; border-bottom: 2px solid #000;
+  padding: 7px 0; margin: 4px 0 10px; font-weight: 700; }
+.card-demo .foot { font-size: 9px; color: #444; border-top: 1px solid #8A8A8A; margin-top: 12px; padding-top: 5px; }
+
+/* ---- SEO pages ---- */
+main.narrow { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+main.narrow h1 { font-size: clamp(26px, 4.4vw, 36px); margin: 22px 0 10px; }
+main.narrow h2 { font-size: 23px; margin: 34px 0 10px; }
+main.narrow h3 { margin: 20px 0 6px; }
+.crumb { font-size: 13px; color: var(--muted); margin-top: 18px; }
+.crumb a { color: var(--muted); }
+.answer { font-size: 18px; border-left: 3px solid var(--primary); padding-left: 14px; margin: 0 0 18px; }
+main.narrow table { width: 100%; border-collapse: collapse; font-size: 14.5px; margin: 14px 0; }
+main.narrow th, main.narrow td { border-bottom: 1px solid var(--rule); padding: 8px 9px; text-align: left; }
+main.narrow th { background: var(--canvas); font-weight: 600; color: var(--ink); }
+main.narrow td.num, main.narrow th.num { text-align: right; font-family: var(--mono); }
+pre { background: var(--canvas); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px;
+  overflow-x: auto; font: 13px/1.6 var(--mono); color: #21262B; margin: 12px 0; }
+.callout { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; margin: 18px 0; }
+.callout p:last-child { margin-bottom: 0; }
+.cta { background: var(--panel); border: 1px solid var(--primary); border-radius: 8px; padding: 18px 20px; margin: 30px 0; }
+.cta h2 { margin: 0 0 6px; font-size: 19px; }
+.cta p { margin: 0 0 12px; font-size: 15px; }
+.cta .btn + .btn { margin-left: 8px; }
+.related { border-top: 1px solid var(--rule); margin-top: 32px; padding-top: 14px; font-size: 15px; }
+.related ul { padding-left: 20px; }
+.reviewed { font-size: 13px; color: var(--muted); margin-top: 26px; border-top: 1px solid var(--rule); padding-top: 10px; }
+
+/* ---- legal prose ---- */
+main.prose { max-width: 720px; margin: 0 auto; padding: 0 20px 24px; }
+main.prose h1 { margin: 26px 0 14px; font-size: clamp(26px, 4.4vw, 38px); }
+main.prose h2 { margin: 28px 0 8px; font-size: 20px; }
+main.prose p, main.prose li { font-size: 15.5px; }
+main.prose ul { padding-left: 22px; }
+
+/* ---- thanks states ---- */
+main.thanks { max-width: 640px; margin: 0 auto; padding: 24px 20px; }
+.thanks-panel { border: 1px solid var(--rule); border-radius: 8px; padding: 22px; background: #fff; }
+.thanks-panel .key { font-family: var(--mono); background: var(--canvas); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 12px 14px; word-break: break-all; font-size: 13px; margin: 12px 0; }
+.thanks-panel[hidden] { display: none; }
+.ask { border: 1px solid var(--rule); border-radius: 8px; padding: 18px 20px; margin-top: 24px; background: #fff; }
+.ask fieldset { border: none; padding: 0; margin: 10px 0 14px; }
+.ask label { display: block; margin: 6px 0; font-size: 15px; }
+
+footer.site { border-top: 1px solid var(--rule); background: var(--canvas); padding: 32px 0; font-size: 14px; }
+footer.site .in { display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; }
+footer.site nav { display: flex; gap: 18px; flex-wrap: wrap; }
+footer.site a { color: var(--body); }
+.colophon { color: var(--muted); font-size: 13px; margin-top: 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in">
+    <a class="logo" href="/">Gradewright</a>
+    <nav class="top-links" aria-label="Main">
+      <a href="/#how">How it works</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/weighted-grades-google-sheets.html">Weighted grades</a>
+      <a href="/report-cards-from-google-sheets.html">Report cards</a>
+    </nav>
+    <a class="btn btn-p" href="https://workspace.google.com/marketplace/search/gradewright">Add to Sheets</a>
+  </div>
+</header>
+<main>
+  <div class="hero">
+    <div class="in">
+      <div>
+        <h1>Weighted grades and report cards, inside Google Sheets</h1>
+        <p class="lede" style="margin-top:14px">Paste the roster you already keep. Map your columns once. Get a weighted final grade for every student, and a one-page report card you can hand back — without Classroom, without a district admin, without a new system to learn.</p>
+        <div class="cta-row">
+          <a class="btn btn-p" href="https://workspace.google.com/marketplace/search/gradewright">Add to Sheets — free for one class</a>
+          <a class="btn btn-s" href="#how">See how it works</a>
+        </div>
+        <p class="small">$12 once if you teach more than one class. No subscription, no account to create.</p>
+      </div>
+      <div class="shot" role="img" aria-label="A Google Sheet roster on the left and the Gradewright sidebar on the right showing 28 computed students, a class average of 84.0% and a written Grade column.">
+        <div class="bar"><i></i><i></i><i></i></div>
+        <div class="body">
+          <div class="sheet">
+            <table>
+              <tr><th>Student</th><th>Quiz 1</th><th>Quiz 2</th><th>Exam</th><th>Grade</th></tr>
+              <tr><td>Avery Lin</td><td>88</td><td>92</td><td>84</td><td>84.00</td></tr>
+              <tr><td>Jordan Pike</td><td>90</td><td>85</td><td>76</td><td>84.00</td></tr>
+              <tr><td>Maria Garcia</td><td>79</td><td>81</td><td>—</td><td>79.20</td></tr>
+              <tr><td>Sam Okafor</td><td>91</td><td>94</td><td>88</td><td>88.60</td></tr>
+              <tr><td>Devon Reyes</td><td></td><td></td><td></td><td></td></tr>
+            </table>
+          </div>
+          <div class="side">
+            <div class="b">Gradewright</div>
+            <div class="r"><span>Class average</span><b>84.0%</b></div>
+            <div class="r"><span>Weights used</span><b>20/30/50</b></div>
+            <div class="r"><span>No scored work</span><b>2</b></div>
+            <div class="k">Preview report cards</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="alt">
+    <div class="in">
+      <h2 class="vh">Why teachers pick Gradewright</h2>
+      <div class="proof">
+        <article>
+          <h3>Your students stay in your Sheet</h3>
+          <p>Gradewright asks for the current spreadsheet only — not your Drive, not your Classroom. Names and scores are read and written in your own Google account. The only thing that reaches our server is a random install ID.</p>
+        </article>
+        <article>
+          <h3>No Classroom, no super-admin</h3>
+          <p>It works on a sheet you typed or pasted yourself. There's nothing for your school's IT department to enable, and no roster sync to ask for.</p>
+        </article>
+        <article>
+          <h3>$12 once, not per month</h3>
+          <p>One payment per Google account unlocks unlimited classes, PDF export, custom letter bands and teacher comments. Free stays free for your first class.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="in">
+      <h2>Three steps, one sidebar</h2>
+      <p class="lede" style="max-width:64ch">No import step, no template to replace. Your sheet stays your sheet; Gradewright adds one column and reads the rest.</p>
+      <ol class="steps">
+        <li><h3>Point it at your columns</h3><p>It finds the Name column and the score columns, tells you what it found ("28 students in column A, 6 score columns B–G") and lets you correct it.</p></li>
+        <li><h3>Set your weights</h3><p>Homework 20, quizzes 30, exams 50 — or 2/3/5, or 20/30/45. Weights don't have to total 100; it renormalizes and shows you the weights it actually used.</p></li>
+        <li><h3>Compute, then hand back cards</h3><p>One grade column, written in place (running it again updates the same column). Then a one-page report card per student — on screen free, as PDF on Pro.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="in">
+      <h2>Does your sheet look like this?</h2>
+      <p style="max-width:66ch">Then you already have everything Gradewright needs. One name column, then one column per assignment or category.</p>
+      <div style="overflow-x:auto">
+        <table class="demo" style="max-width:640px">
+          <tr><th>Student</th><th>Quiz 1</th><th>Quiz 2</th><th>Exam</th><th>Exam possible</th></tr>
+          <tr><td>Avery Lin</td><td class="num">88</td><td class="num">92</td><td class="num">42</td><td class="num">50</td></tr>
+          <tr><td>Jordan Pike</td><td class="num">90</td><td class="num">85</td><td class="num">76</td><td class="num">100</td></tr>
+          <tr><td>Maria Garcia</td><td class="num">79</td><td class="num">excused</td><td class="num"></td><td class="num">100</td></tr>
+        </table>
+      </div>
+      <p class="small" style="margin-top:10px">Empty cell: not scored, left out of the average. <b>0</b>: a real zero, counted. <b>excused</b>: left out, and marked as excused on the report card.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="in">
+      <h2>The part most sheets get wrong: weights that don't total 100</h2>
+      <p style="max-width:66ch">A teacher sets 20 / 30 / 45 by mistake. A spreadsheet formula that assumes 100 quietly produces a final grade that's too low. Gradewright divides by what you actually entered and tells you what it used.</p>
+      <div style="overflow-x:auto;margin-bottom:14px">
+        <table class="demo" style="max-width:620px">
+          <tr><th>Category</th><th>Average</th><th>You entered</th><th>Used</th></tr>
+          <tr><td>Homework</td><td class="num">90.00</td><td class="num">20</td><td class="num">21.05%</td></tr>
+          <tr><td>Quizzes</td><td class="num">83.33</td><td class="num">30</td><td class="num">31.58%</td></tr>
+          <tr><td>Exams</td><td class="num">82.00</td><td class="num">45</td><td class="num">47.37%</td></tr>
+          <tr><th>Final</th><th class="num">84.11</th><th class="num">95 total</th><th class="num">100%</th></tr>
+        </table>
+      </div>
+      <div class="notice" style="max-width:66ch">Without renormalizing, the same scores give <b>79.90</b> — 4.21 points lower, for no reason a parent could follow.</div>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="in">
+      <h2>What's on the report card</h2>
+      <p style="max-width:66ch">One page, black-and-white legible, no decorative colour. Student and class, the term, each category with its average and the weight used, the final percentage, the letter, and — on Pro — your comment.</p>
+      <div class="rc">
+        <div class="card-demo">
+          <div class="t">Report Card</div>
+          <div class="sub">Period 3 · Fall term · 14 December 2026</div>
+          <div class="row"><span>Student</span><b>Avery Lin</b></div>
+          <div class="row"><span>Homework · 20%</span><span>90.00%</span></div>
+          <div class="row"><span>Quizzes · 30%</span><span>83.33%</span></div>
+          <div class="row"><span>Exams · 50%</span><span>82.00%</span></div>
+          <div class="fin"><span>Final grade</span><span>84.00% &nbsp; B</span></div>
+          <div style="font-size:10.5px"><b>Teacher comment</b><br>Strong second half; the exam rewrite helped.</div>
+          <div class="foot">Gradewright · gradewright.foxlayne.ai</div>
+        </div>
+        <div>
+          <h3>What it deliberately leaves out</h3>
+          <p>No attendance, no conduct marks, no "areas for improvement" autotext, no signature line for a principal. Those belong to your school's system, and inventing them would make the card look official in ways it isn't.</p>
+          <h3 style="margin-top:18px">What you still do by hand</h3>
+          <p>You write the comment (Pro), and you decide whether the letter band your school uses matches the default A/B/C/D/F. Custom bands are a Pro setting, not a guess we make for you.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="in">
+      <h2>Pricing</h2>
+      <p class="lede" style="max-width:60ch">Free is a complete single class, not a demo. Pro removes the class limit and unlocks export.</p>
+      <div class="price">
+        <article>
+          <h3>Free</h3>
+          <div class="amt">$0 <small>one class</small></div>
+          <ul>
+            <li>Weighted final grades, written into your sheet</li>
+            <li>Weights that don't total 100, normalized and shown</li>
+            <li>Drop-lowest-N within a category</li>
+            <li>Blank / excused / zero handled separately</li>
+            <li>On-screen report card preview</li>
+          </ul>
+          <a class="btn btn-s btn-wide" href="https://workspace.google.com/marketplace/search/gradewright">Add to Sheets</a>
+        </article>
+        <article class="pro">
+          <h3>Pro</h3>
+          <div class="amt">$12 <small>once, per Google account</small></div>
+          <ul>
+            <li>Everything in Free, for every class you teach</li>
+            <li>PDF export — one file per student, or all of them</li>
+            <li>Custom letter bands</li>
+            <li>Teacher comment on each report card</li>
+          </ul>
+          <a class="btn btn-p btn-wide" href="https://workspace.google.com/marketplace/search/gradewright">Add to Sheets, then unlock in the sidebar</a>
+          <p class="small" style="margin:10px 0 0">One-time payment. No subscription, no renewal, no price change later for people who already paid.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="in">
+      <h2>Your students' data</h2>
+      <p style="max-width:70ch">Gradewright runs inside your own Google account and asks for access to the current spreadsheet only — not your Drive, not Gmail, not Classroom. Student names, scores and the spreadsheet itself never reach our server. The only things sent are a random install ID, and a Stripe session ID while you're buying Pro. The site counts page views with a random ID kept in your browser for 24 hours; there are no tracking cookies and no third-party scripts.</p>
+      <p class="small"><a href="/privacy.html">Read the full privacy page</a> — one screen, no legal padding.</p>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="in">
+      <h2>Questions teachers actually ask</h2>
+      <div class="faq" style="max-width:72ch;margin-top:18px">
+        <details open><summary>Do I need Google Classroom?</summary>
+          <p>No. Gradewright works on a sheet you keep yourself. There is no roster sync and no Classroom permission, which is also why there's nothing for a school admin to approve.</p></details>
+        <details><summary>Where do my students' grades go?</summary>
+          <p>Nowhere. Names and scores stay in your Google Sheet, in your Google account. The add-on talks to our licence server only to start a checkout and to check a licence key, and those requests carry a random install ID — never a name, a score, a sheet ID or an email address.</p></details>
+        <details><summary>What's the difference between blank, excused and zero?</summary>
+          <p>A blank cell is work that hasn't been scored: it's left out of the average. The word <b>excused</b> is also left out, but the report card can show it was excused rather than missing. A <b>0</b> is a zero and it counts — which is the whole point, and the reason one careless empty cell versus a typed 0 can move a homework average by 18 points.</p></details>
+        <details><summary>My weights add up to 95. Is that broken?</summary>
+          <p>No. It divides each weight by the total you entered (so 20/30/45 becomes 21.05 / 31.58 / 47.37%) and shows you the numbers it used. Nothing is silently rejected.</p></details>
+        <details><summary>Can I use it for five classes?</summary>
+          <p>The free version covers one spreadsheet. Pro covers every class you teach, for one $12 payment on your Google account.</p></details>
+        <details><summary>Can I move my free class to a different spreadsheet?</summary>
+          <p>Yes — the sidebar offers to move it, and says plainly that the previous spreadsheet stops computing until you switch back or unlock Pro. Your grades and weights there are never deleted.</p></details>
+        <details><summary>I changed schools and lost the licence. Now what?</summary>
+          <p>The licence is tied to the install, not to your name. Email <span class="mono">support@foxlayne.ai</span> with your Stripe receipt and it gets moved.</p></details>
+        <details><summary>Is this FERPA compliant?</summary>
+          <p>We don't claim compliance with anything, and you should be suspicious of a $12 add-on that does. What we can state precisely: the add-on requests the current spreadsheet only, and no student data is transmitted anywhere.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="in">
+    <div>
+      <div class="logo">Gradewright</div>
+      <div class="colophon">A FoxLayne product. Built for teachers who keep their gradebook in a spreadsheet.</div>
+    </div>
+    <nav aria-label="Footer">
+      <a href="/weighted-grades-google-sheets.html">Weighted grades</a>
+      <a href="/report-cards-from-google-sheets.html">Report cards</a>
+      <a href="/report-card-template.html">Free template</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="mailto:support@foxlayne.ai">Support</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
