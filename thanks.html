@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>You are unlocked — Gradewright</title>
-<meta name="description" content="Your Gradewright licence key, and the two steps that turn Pro on in your spreadsheet.">
+<title>Thanks for buying Pro — Gradewright</title>
+<meta name="description" content="After checkout: paste your Stripe session ID into the Gradewright sidebar to turn Pro on in your spreadsheet.">
 <link rel="canonical" href="https://gradewright.foxlayne.ai/thanks.html">
 <style>
 /* Gradewright site stylesheet — system fonts only, zero external requests.
@@ -218,32 +218,12 @@ footer.site a { color: var(--body); }
 <main class="thanks">
   <h1 id="thanks-h1">Bought Pro on another computer?</h1>
 
-  <section class="thanks-panel" id="state-claimed" hidden>
-    <h2>You are unlocked</h2>
-    <p>Your licence key is below. Copy it, then open your sheet and paste it into the sidebar.</p>
-    <div class="key" id="claim-key"></div>
-    <button class="btn btn-p" type="button" data-copy="claim-key">Copy key</button>
-    <h3>Three steps to turn Pro on</h3>
-    <ol>
-      <li>Open your grade sheet.</li>
-      <li>Gradewright &rarr; Already paid? &rarr; Restore a license.</li>
-      <li>Paste the key and confirm.</li>
-    </ol>
-    <p class="small">Pro adds unlimited classes, PDF report cards, custom letter bands and teacher comments. One payment, no subscription.</p>
-  </section>
-
   <section class="thanks-panel" id="state-manual" hidden>
     <h2>One more step</h2>
-    <p>Your browser didn't finish the return trip, so paste this session ID into the sidebar instead of a key.</p>
+    <p>Thanks for buying Pro. Copy this session ID; the sidebar checks it with Stripe and turns Pro on.</p>
     <div class="key" id="manual-session"></div>
     <button class="btn btn-p" type="button" data-copy="manual-session">Copy</button>
     <p>Then open your sheet: Gradewright &rarr; Already paid? &rarr; Restore a license, and paste it there.</p>
-  </section>
-
-  <section class="thanks-panel" id="state-failed" hidden>
-    <h2>Checkout didn't complete</h2>
-    <p id="fail-msg"></p>
-    <p><a href="mailto:support@foxlayne.ai">Email support</a> with your receipt and we'll sort it out.</p>
   </section>
 
   <section class="thanks-panel" id="state-direct">
@@ -252,7 +232,7 @@ footer.site a { color: var(--body); }
     <ol>
       <li>Open your grade sheet.</li>
       <li>Gradewright &rarr; Already paid? &rarr; Restore a license.</li>
-      <li>Paste the key from your purchase page, or the <code>cs_</code> session ID from your receipt.</li>
+      <li>Paste the <code>cs_</code> session ID from your Stripe receipt (or your licence key, if you saved it).</li>
     </ol>
     <p class="small">If you've lost both, email <a href="mailto:support@foxlayne.ai">support@foxlayne.ai</a> with your Stripe receipt and we'll move the licence.</p>
   </section>
@@ -283,21 +263,9 @@ footer.site a { color: var(--body); }
       if (el) el.hidden = false;
       h1.textContent = title;
     }
-    var MSGS = {
-      SESSION_UNPAID: 'Stripe shows that checkout as not paid. If you were charged, email support with the receipt and nothing else is needed.',
-      SESSION_NOT_FOUND: 'I can\u2019t find that checkout. Copy the session id from your receipt email, or the key from the page that opened after payment.',
-      REF_MISMATCH: 'That purchase belongs to a different Gradewright install. Paste the key from your purchase page instead.',
-      PRICE_MISMATCH: 'That checkout isn\u2019t for the $12 Pro unlock. Email support with your receipt.'
-    };
-    if (p.get('key') && p.get('status') === 'ok') {
-      show('state-claimed', 'You are unlocked');
-      document.getElementById('claim-key').textContent = p.get('key');
-    } else if (p.get('status') === 'error') {
-      show('state-failed', 'Checkout didn\u2019t complete');
-      var code = p.get('code') || '';
-      document.getElementById('fail-msg').textContent =
-        MSGS[code] || 'That checkout didn\u2019t complete. Email support and include your receipt.';
-    } else if (p.get('session_id')) {
+    // fix-49 (security LOW-3): the page never claims an unlock from URL parameters. Only the
+    // session_id is shown; the sidebar verifies it server-side with Stripe.
+    if (p.get('session_id')) {
       show('state-manual', 'One more step');
       document.getElementById('manual-session').textContent = p.get('session_id');
     } else {
